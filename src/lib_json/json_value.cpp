@@ -1433,6 +1433,14 @@ ptrdiff_t Value::getOffsetStart() const { return start_; }
 
 ptrdiff_t Value::getOffsetLimit() const { return limit_; }
 
+String Value::toString() const {
+  Json::StreamWriterBuilder writerBuilder;
+  writerBuilder["indentation"] = ""; // 禁用缩进
+  writerBuilder["emitUTF8"] = true;  // 禁止转为\u那种东西
+  std::string out = Json::writeString(writerBuilder, *this);
+  return out;
+}
+
 String Value::toStyledString() const {
   StreamWriterBuilder builder;
 
