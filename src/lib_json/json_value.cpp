@@ -625,10 +625,10 @@ bool Value::getString(char const** begin, char const** end) const {
   return true;
 }
 
-String Value::asString() const {
+String Value::asString(const String& defaultValue) const {
   switch (type()) {
   case nullValue:
-    return "";
+    return defaultValue;
   case stringValue: {
     if (value_.string_ == nullptr)
       return "";
@@ -646,96 +646,119 @@ String Value::asString() const {
     return valueToString(value_.uint_);
   case realValue:
     return valueToString(value_.real_);
-  default:
-    JSON_FAIL_MESSAGE("Type is not convertible to string");
+  case objectValue:
+    return this->toString();
+  default: {
   }
+  }
+  return defaultValue;
+  JSON_FAIL_MESSAGE("Type is not convertible to string");
 }
 
-Value::Int Value::asInt() const {
+Value::Int Value::asInt(Int defaultValue) const {
   switch (type()) {
   case intValue:
-    JSON_ASSERT_MESSAGE(isInt(), "LargestInt out of Int range");
+    // JSON_ASSERT_MESSAGE(isInt(), "LargestInt out of Int range");
     return Int(value_.int_);
   case uintValue:
-    JSON_ASSERT_MESSAGE(isInt(), "LargestUInt out of Int range");
+    // JSON_ASSERT_MESSAGE(isInt(), "LargestUInt out of Int range");
     return Int(value_.uint_);
   case realValue:
-    JSON_ASSERT_MESSAGE(InRange(value_.real_, minInt, maxInt),
-                        "double out of Int range");
+    // JSON_ASSERT_MESSAGE(InRange(value_.real_, minInt, maxInt),
+    //                    "double out of Int range");
     return Int(value_.real_);
   case nullValue:
-    return 0;
+    return defaultValue;
   case booleanValue:
     return value_.bool_ ? 1 : 0;
+  case stringValue:
+    return std::atoi(asCString());
   default:
     break;
   }
+  return defaultValue;
   JSON_FAIL_MESSAGE("Value is not convertible to Int.");
 }
 
-Value::UInt Value::asUInt() const {
+Value::UInt Value::asUInt(UInt defaultValue) const {
   switch (type()) {
   case intValue:
-    JSON_ASSERT_MESSAGE(isUInt(), "LargestInt out of UInt range");
+    // JSON_ASSERT_MESSAGE(isUInt(), "LargestInt out of UInt range");
     return UInt(value_.int_);
   case uintValue:
-    JSON_ASSERT_MESSAGE(isUInt(), "LargestUInt out of UInt range");
+    // JSON_ASSERT_MESSAGE(isUInt(), "LargestUInt out of UInt range");
     return UInt(value_.uint_);
   case realValue:
-    JSON_ASSERT_MESSAGE(InRange(value_.real_, 0, maxUInt),
-                        "double out of UInt range");
+    // JSON_ASSERT_MESSAGE(InRange(value_.real_, 0, maxUInt),
+    //                     "double out of UInt range");
     return UInt(value_.real_);
   case nullValue:
-    return 0;
+    return defaultValue;
   case booleanValue:
     return value_.bool_ ? 1 : 0;
+  case stringValue: {
+    char* end = nullptr;
+    auto v = std::strtoul(asCString(), &end, 10);
+    return v;
+  }
   default:
     break;
   }
+  return defaultValue;
   JSON_FAIL_MESSAGE("Value is not convertible to UInt.");
 }
 
 #if defined(JSON_HAS_INT64)
 
-Value::Int64 Value::asInt64() const {
+Value::Int64 Value::asInt64(Int64 defaultValue) const {
   switch (type()) {
   case intValue:
     return Int64(value_.int_);
   case uintValue:
-    JSON_ASSERT_MESSAGE(isInt64(), "LargestUInt out of Int64 range");
+    // JSON_ASSERT_MESSAGE(isInt64(), "LargestUInt out of Int64 range");
     return Int64(value_.uint_);
   case realValue:
-    JSON_ASSERT_MESSAGE(InRange(value_.real_, minInt64, maxInt64),
-                        "double out of Int64 range");
+    // JSON_ASSERT_MESSAGE(InRange(value_.real_, minInt64, maxInt64),
+    //                     "double out of Int64 range");
     return Int64(value_.real_);
   case nullValue:
-    return 0;
+    return defaultValue;
   case booleanValue:
     return value_.bool_ ? 1 : 0;
+  case stringValue: {
+    return std::atoll(asCString());
+  }
   default:
     break;
   }
+  return defaultValue;
   JSON_FAIL_MESSAGE("Value is not convertible to Int64.");
 }
 
-Value::UInt64 Value::asUInt64() const {
+Value::UInt64 Value::asUInt64(UInt64 defaultValue) const {
   switch (type()) {
   case intValue:
-    JSON_ASSERT_MESSAGE(isUInt64(), "LargestInt out of UInt64 range");
+    // JSON_ASSERT_MESSAGE(isUInt64(), "LargestInt out of UInt64 range");
     return UInt64(value_.int_);
   case uintValue:
     return UInt64(value_.uint_);
   case realValue:
-    JSON_ASSERT_MESSAGE(InRange(value_.real_, 0, maxUInt64),
-                        "double out of UInt64 range");
+    // JSON_ASSERT_MESSAGE(InRange(value_.real_, 0, maxUInt64),
+    //                    "double out of UInt64 range");
     return UInt64(value_.real_);
   case nullValue:
-    return 0;
+    return defaultValue;
   case booleanValue:
     return value_.bool_ ? 1 : 0;
+  case stringValue: {
+    char* end = nullptr;
+    auto v = std::strtoull(asCString(), &end, 10);
+    return v;
+  }
   default:
     break;
   }
+  return defaultValue;
   JSON_FAIL_MESSAGE("Value is not convertible to UInt64.");
 }
 #endif // if defined(JSON_HAS_INT64)
@@ -756,7 +779,7 @@ LargestUInt Value::asLargestUInt() const {
 #endif
 }
 
-double Value::asDouble() const {
+double Value::asDouble(double defaultValue) const {
   switch (type()) {
   case intValue:
     return static_cast<double>(value_.int_);
@@ -769,16 +792,20 @@ double Value::asDouble() const {
   case realValue:
     return value_.real_;
   case nullValue:
-    return 0.0;
+    return defaultValue;
   case booleanValue:
     return value_.bool_ ? 1.0 : 0.0;
+  case stringValue: {
+    return std::stod(asCString());
+  }
   default:
     break;
   }
+  return defaultValue;
   JSON_FAIL_MESSAGE("Value is not convertible to double.");
 }
 
-float Value::asFloat() const {
+float Value::asFloat(float defaultValue) const {
   switch (type()) {
   case intValue:
     return static_cast<float>(value_.int_);
@@ -792,21 +819,27 @@ float Value::asFloat() const {
   case realValue:
     return static_cast<float>(value_.real_);
   case nullValue:
-    return 0.0;
+    return defaultValue;
   case booleanValue:
     return value_.bool_ ? 1.0F : 0.0F;
+  case stringValue: {
+    char* end = nullptr;
+    auto v = std::strtof(asCString(), &end);
+    return v;
+  }
   default:
     break;
   }
+  return defaultValue;
   JSON_FAIL_MESSAGE("Value is not convertible to float.");
 }
 
-bool Value::asBool() const {
+bool Value::asBool(bool defaultValue) const {
   switch (type()) {
   case booleanValue:
     return value_.bool_;
   case nullValue:
-    return false;
+    return defaultValue;
   case intValue:
     return value_.int_ != 0;
   case uintValue:
@@ -816,9 +849,12 @@ bool Value::asBool() const {
     const auto value_classification = std::fpclassify(value_.real_);
     return value_classification != FP_ZERO && value_classification != FP_NAN;
   }
+  case stringValue:
+    return std::strcmp(asCString(), "true") == 0;
   default:
     break;
   }
+  return defaultValue;
   JSON_FAIL_MESSAGE("Value is not convertible to bool.");
 }
 
@@ -959,9 +995,8 @@ const Value& Value::operator[](ArrayIndex index) const {
 }
 
 const Value& Value::operator[](int index) const {
-  JSON_ASSERT_MESSAGE(
-      index >= 0,
-      "in Json::Value::operator[](int index) const: index cannot be negative");
+  JSON_ASSERT_MESSAGE(index >= 0, "in Json::Value::operator[](int index) "
+                                  "const: index cannot be negative");
   return (*this)[ArrayIndex(index)];
 }
 
@@ -1583,13 +1618,15 @@ const Value& Path::resolve(const Value& root) const {
   for (const auto& arg : args_) {
     if (arg.kind_ == PathArgument::kindIndex) {
       if (!node->isArray() || !node->isValidIndex(arg.index_)) {
-        // Error: unable to resolve path (array value expected at position... )
+        // Error: unable to resolve path (array value expected at position...
+        // )
         return Value::nullSingleton();
       }
       node = &((*node)[arg.index_]);
     } else if (arg.kind_ == PathArgument::kindKey) {
       if (!node->isObject()) {
-        // Error: unable to resolve path (object value expected at position...)
+        // Error: unable to resolve path (object value expected at
+        // position...)
         return Value::nullSingleton();
       }
       node = &((*node)[arg.key_]);

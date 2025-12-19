@@ -379,22 +379,23 @@ public:
   unsigned getCStringLength() const; // Allows you to understand the length of
                                      // the CString
 #endif
-  String asString() const; ///< Embedded zeroes are possible.
+  String asString(
+      const String& defaultValue = "") const; ///< Embedded zeroes are possible.
   /** Get raw char* of string-value.
    *  \return false if !string. (Seg-fault if str or end are NULL.)
    */
   bool getString(char const** begin, char const** end) const;
-  Int asInt() const;
-  UInt asUInt() const;
+  Int asInt(Int defaultValue = 0) const;
+  UInt asUInt(UInt defaultValue = 0) const;
 #if defined(JSON_HAS_INT64)
-  Int64 asInt64() const;
-  UInt64 asUInt64() const;
+  Int64 asInt64(Int64 defaultValue = 0) const;
+  UInt64 asUInt64(UInt64 defaultValue = 0) const;
 #endif // if defined(JSON_HAS_INT64)
   LargestInt asLargestInt() const;
   LargestUInt asLargestUInt() const;
-  float asFloat() const;
-  double asDouble() const;
-  bool asBool() const;
+  float asFloat(float defaultValue = 0) const;
+  double asDouble(double defaultValue = 0) const;
+  bool asBool(bool defaultValue = false) const;
 
   bool isNull() const;
   bool isBool() const;
@@ -587,19 +588,23 @@ public:
   iterator end();
 
   /// \brief Returns a reference to the first element in the `Value`.
-  /// Requires that this value holds an array or json object, with at least one element.
+  /// Requires that this value holds an array or json object, with at least one
+  /// element.
   const Value& front() const;
 
   /// \brief Returns a reference to the first element in the `Value`.
-  /// Requires that this value holds an array or json object, with at least one element.
+  /// Requires that this value holds an array or json object, with at least one
+  /// element.
   Value& front();
 
   /// \brief Returns a reference to the last element in the `Value`.
-  /// Requires that value holds an array or json object, with at least one element.
+  /// Requires that value holds an array or json object, with at least one
+  /// element.
   const Value& back() const;
 
   /// \brief Returns a reference to the last element in the `Value`.
-  /// Requires that this value holds an array or json object, with at least one element.
+  /// Requires that this value holds an array or json object, with at least one
+  /// element.
   Value& back();
 
   // Accessors for the [start, limit) range of bytes within the JSON text from
